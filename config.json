@@ -1,0 +1,15 @@
+{
+	"port": 1410,
+	"flLogToConsole": true,
+	"flAllowAccessFromAnywhere": true,
+	
+	"defaultTemplate": "http://localhost:1411/minimal-https/index.html",
+	
+	"specialOutlines": {
+		"andysylvester": {
+			"urlBlogOpml": "https://andysylvester.com/files/DrummerBlog/blog.opml",
+			"basePath": "/blog/",
+			"baseUrl": "https://andysylvester.com/files/DrummerBlog/"
+			}
+		}
+	}

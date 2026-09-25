@@ -1,0 +1,102 @@
+<html>
+	<head>
+		<title>[%pagetitle%]</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		[%rssLink%]
+		[%facebookmetadata%]
+		[%twittermetadata%]
+		
+		<link href="//fonts.googleapis.com/css?family=Ubuntu:400,500i,700" rel="stylesheet">
+		<link rel="stylesheet" href="//s3.amazonaws.com/scripting.com/code/fontawesome/css/all.css">
+		<link rel="stylesheet" href="//s3.amazonaws.com/fargo.io/code/editors/mediumeditor/dist/css/medium-editor.css"> 
+		<link rel="stylesheet" href="//s3.amazonaws.com/fargo.io/code/editors/mediumeditor/dist/css/themes/default.css"> 
+		<script src="//s3.amazonaws.com/fargo.io/code/editors/mediumeditor/dist/js/medium-editor.js"></script>
+		<script src="//s3.amazonaws.com/scripting.com/code/includes/jquery-1.9.1.min.js"></script>
+		<link href="//s3.amazonaws.com/scripting.com/code/includes/bootstrap.css" rel="stylesheet">
+		<script src="//s3.amazonaws.com/scripting.com/code/includes/bootstrap.min.js"></script>
+		<script src="//s3.amazonaws.com/scripting.com/code/includes/basic/code.js"></script>
+		<link href="//s3.amazonaws.com/scripting.com/code/includes/basic/styles.css" rel="stylesheet" type="text/css">
+		<link href="//s3.amazonaws.com/radio3.io/code/pagestyles.css" rel="stylesheet" type="text/css">
+		<script src="//s3.amazonaws.com/scripting.com/code/tweeteditor/code.js"></script>
+		<script src="//s3.amazonaws.com/scripting.com/code/nodestorage/api.js"></script>
+		<script src="//s3.amazonaws.com/scripting.com/code/imageclick/dialog.js"></script>
+		<script src="//s3.amazonaws.com/scripting.com/code/xml/code.js"></script>
+		<script src="https://s3.amazonaws.com/scripting.com/code/emojify/code.js"></script>
+		<link rel="stylesheet" href="https://s3.amazonaws.com/scripting.com/code/emojify/styles.css"/>
+		<script src="//s3.amazonaws.com/scripting.com/code/tagrefdialog/dialog.js"></script>
+		<script src="//s3.amazonaws.com/scripting.com/code/opmlpackage/client/opml.js"></script>
+		<script src="//s3.amazonaws.com/scripting.com/code/outlinebrowser/code.js"></script>
+		<link href="//s3.amazonaws.com/scripting.com/code/outlinebrowser/styles.css" rel="stylesheet" type="text/css">
+		
+		<!-- This stuff is needed for blogroll -- 4/14/24 by DW -->
+			<script src="//s3.amazonaws.com/scripting.com/code/feedland/home/api.js"></script>
+			<script src="//s3.amazonaws.com/scripting.com/code/feedland/home/misc.js"></script>
+			<link href="//s3.amazonaws.com/scripting.com/code/feedland/home/misc.css" rel="stylesheet" type="text/css">
+			<link href="//s3.amazonaws.com/scripting.com/code/feedland/home/mobile.css" rel="stylesheet" type="text/css">
+			<link href="https://code.scripting.com/blogroll/blogroll.css" rel="stylesheet">
+			<script src="https://code.scripting.com/blogroll/blogroll.js"></script>
+		
+		<link href="//s3.amazonaws.com/scripting.com/code/drummercms/templates/minimal/styles.css" rel="stylesheet" type="text/css">
+		<script src="//s3.amazonaws.com/scripting.com/code/drummercms/templates/minimal/code.js"></script>
+		
+		<script>
+			var config = [%configJson%];
+			var opmlHead = [%opmlHead%];
+			var aboutOutline = [%aboutOutline%]; //10/18/21 by DW
+			</script>
+		</head>
+	<body>
+		<div id="idTweetDialog" class="modal hide fade divTweetDialog">
+			<div class="divTweetDialogContainer">
+				<div id="idMyTweetEditor">
+					</div>
+				</div>
+			</div>
+		<div class="divToggleConnect"><a onclick="toggleTwitterConnect ();" id="idToggleConnect"></a></div><div>&nbsp;</div>
+		<div class="divVersionNumber" id="idVersionNumber">
+			</div>
+		<div class="divPagetop">
+			[%pagetop%]
+			</div>
+		<div class="divPageBody">
+			<div class="divTabsPage" id="idTabsPage" stylex="display: none">
+				<div class="divTabs" id="idTabs">
+					<div class="divLastBlogUpdate" id="idLastBlogUpdate">
+						</div>
+					<ul id="idTabList" class="nav nav-tabs">
+						</ul>
+					</div>
+				
+				<div class="divTabContentContainer">
+					<div class="divTabContent" id="idTabContent">
+						[%bodytext%]
+						</div>
+					</div>
+				
+				</div>
+			
+			<div class="divSpacerCell">
+				</div>
+			<div class="divSidebar">
+				<div class="divBlogrollContainer" id="idBlogrollContainer" tabindex="0">
+					</div>
+				</div>
+			
+			<div class="divDayContainer" id="idDayContainer" style="display: none">
+				[%bodytext%]
+				</div>
+			<div class="divFooter">
+				<p>[%copyright%]</p>
+				<p>Last update: <span id="idLastUpdateStringInFooter">[%now%]</span>.</p>
+				[%socialMediaLinks%]
+				</div>
+			</div>
+		<script>
+			$(document).ready (function () {
+				startup ();
+				});
+			</script>
+		</body>
+	</html>
