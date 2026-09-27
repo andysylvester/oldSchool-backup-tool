@@ -27,7 +27,7 @@ plain run:
 
 1. **The OPML URL is derived, not configured.** `oldschoolBuild` builds it as
    `drummerHome + blogName + "/blog.opml"`. The only way to point it at an arbitrary
-   URL is the `specialOutlines` config key (drummercms.js:158).
+   URL is the `specialOutlines` config key (drummercms.js:165).
 2. **All output goes to Amazon S3.** `oldschool.publishFile` calls `s3.newObject` for
    every page, feed and item. With no AWS account nothing gets written anywhere.
 
@@ -67,7 +67,8 @@ below.
 
 ### Generated, not source
 
-- `output/` — 350 files, the built blog. This is what gets uploaded.
+- `output/` — 350 files, the built blog. Upload the *contents* of `output/blog/`
+  (`basePath` is `/blog/`) to `baseUrl`.
 - `data/` — oldSchool's local cache (`pages/`, `days/`, `items/`, `debug/`,
   `wordpress/`). Safe to delete; forces a full rebuild.
 
@@ -76,7 +77,7 @@ below.
 ## Upstream bugs worked around
 
 **`oldschoolblog` v0.8.16 double-callback.** In `publishRssFeed`, both `pubRss`
-(oldschool.js:1499) and `pubFacebookRss` (oldschool.js:1466) invoke the shared
+and `pubFacebookRss` invoke the shared
 callback, so the tail of `publishBlog` runs twice and drummerCms sends the `/build`
 response twice — `ERR_HTTP_HEADERS_SENT`, process dies. The build itself completes
 first; only the exit is affected. `run-local.js` makes the second response a no-op
@@ -86,9 +87,10 @@ rather than editing `node_modules`.
 `urlCalendar`, but `publishBlog` doesn't write it — oldSchool leaves it to a
 once-per-second background timer started in `init` (oldschool.js:2162). The launcher
 was exiting before the timer fired. `run-local.js` now waits ~3s and reports whether
-the file landed. Output went from 323 to 324 files.
+the file landed. Output went from 323 to 324 files. Once the blog was live, a second
+wrinkle turned up — see "calendar.json only gets written when it changes" below.
 
-**`copyAllHeadElements` is a no-op.** drummercms.js:56 assigns each head element to
+**`copyAllHeadElements` is a no-op.** drummercms.js:58 assigns each head element to
 itself. Harmless in practice — `opmlHead` reaches the page through oldSchool's own
 path — but it does nothing.
 
@@ -183,8 +185,13 @@ four blogroll elements (`divSidebar`, `divSpacerCell`, `divBlogrollContainer`,
 `idBlogrollContainer`) that the current template has and the 2023-vintage one didn't.
 Rendered side by side in Chrome — indistinguishable.
 
-Note: viewing the live archive page over HTTPS shows it completely unstyled, because
-it uses the stock template. Same root cause as the upload problem below.
+Note: viewing the live archive page on oldschool.scripting.com over HTTPS shows it
+completely unstyled, because it uses the stock template. Same root cause as the
+HTTPS upload problem above.
+
+The current-month page oldSchool builds (`2026/09/index.html`) is still empty, since
+there are no posts this month, and it is uploaded along with the rest. It's harmless,
+but it can be left out of the upload if an empty month page is unwanted.
 
 It exports `buildArchives (blogName, flVerbose)` and `run-local.js` calls it once the
 build returns 200, so one command does the whole job. `--no-archives` skips the step.
@@ -302,6 +309,13 @@ node run-local.js andysylvester --no-archives # skip the month archive step
 node build-archives.js andysylvester         # rebuild just the archives
 rm -rf output data                           # force a clean rebuild
 ```
+
+**Local review follows links to the live site.** Every permalink and nav link is
+baked with the production `baseUrl`, so `serve-local.js` shows only the page you open
+from the new build — clicking through lands on `https://andysylvester.com/...`. To
+browse a build end-to-end locally, temporarily set `baseUrl` to
+`http://localhost:8080/blog/` and rebuild, then set it back before building for
+upload.
 
 `build-archives.js` reads the day cache in `data/` and the archive page the build
 just wrote, so standalone runs need a `run-local.js` build to have happened first.

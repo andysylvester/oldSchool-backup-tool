@@ -1,5 +1,6 @@
-/*	serve-local.js -- serve the ./output folder so the built blog can be viewed
-	at the baseUrl configured in config.json (http://localhost:8080/blog/).
+/*	serve-local.js -- serve the ./output folder at http://localhost:8080/blog/
+	for review. Links in the pages use the baseUrl from config.json, so with the
+	production baseUrl they lead to the live site, not back to this server.
 	*/
 
 const http = require ("http");
