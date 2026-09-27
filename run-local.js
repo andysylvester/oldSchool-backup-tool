@@ -8,10 +8,13 @@
 	A successful build is followed by build-archives.js, which backfills the
 	per-month index pages oldSchool only ever builds for the current month.
 
-	Usage: node run-local.js [blogName] [--keep-alive] [--no-archives]
+	Usage: node run-local.js [blogName] [--keep-alive] [--no-archives] [--local-opml[=path]]
 
 	With --keep-alive the drummerCms server stays up on port 1410 afterward, so
 	you can rebuild at any time with http://localhost:1410/build?blog=<blogName>.
+
+	With --local-opml the blog is built from a local OPML file (./blog.opml, or
+	the path given) instead of the urlBlogOpml in config.json.
 	*/
 
 const fs = require ("fs");
@@ -30,6 +33,15 @@ const outputFolder = path.resolve (__dirname, "output");
 const templateFolder = path.resolve (__dirname, "templates");
 const port = 1410;
 const templatePort = 1411;
+const blogConfig = JSON.parse (fs.readFileSync (path.resolve (__dirname, "config.json"), "utf8")).specialOutlines [blogName];
+
+const localOpmlArg = args.find (function (s) {return ((s == "--local-opml") || s.startsWith ("--local-opml="));});
+const localOpmlFile = (localOpmlArg === undefined) ? undefined : path.resolve (localOpmlArg.split ("=") [1] || path.join (__dirname, "blog.opml"));
+const localOpmlPath = "/local-opml/blog.opml"; //where the template server serves it
+if ((localOpmlFile !== undefined) && !fs.existsSync (localOpmlFile)) {
+	console.log ("run-local: can't find the local OPML file " + localOpmlFile);
+	process.exit (1);
+	}
 
 function localPath (s3path) {
 	return (path.join (outputFolder, s3path.replace (/^\/+/, "")));
@@ -74,12 +86,57 @@ ServerResponse.prototype.end = function () {
 	return (origEnd.apply (this, arguments));
 	};
 
+/*	drummerCms reads blog.opml with request () from urlBlogOpml, which it gets
+	from its own copy of config.json (drummercms.js:146). With --local-opml,
+	send that one URL to the template server below, which serves the local
+	file. Every other request, oldSchool's included, passes through untouched.
+	*/
+if (localOpmlFile !== undefined) {
+	if (blogConfig === undefined) {
+		console.log ("run-local: --local-opml needs \"" + blogName + "\" in config.json's specialOutlines.");
+		process.exit (1);
+		}
+	const origRequest = require ("request");
+	const requestModule = require.cache [require.resolve ("request")];
+	const localUrl = "http://localhost:" + templatePort + localOpmlPath;
+	const wrapped = function (options) {
+		const args = Array.prototype.slice.call (arguments);
+		if (options === blogConfig.urlBlogOpml) {
+			args [0] = localUrl;
+			}
+		else {
+			if ((typeof options == "object") && ((options.url === blogConfig.urlBlogOpml) || (options.uri === blogConfig.urlBlogOpml))) {
+				args [0] = Object.assign ({}, options, {url: localUrl, uri: undefined});
+				}
+			}
+		return (origRequest.apply (this, args));
+		};
+	Object.assign (wrapped, origRequest);
+	requestModule.exports = wrapped;
+	console.log ("run-local: building from local OPML " + localOpmlFile);
+	}
+
 /*	oldSchool fetches the template over HTTP, so serve ./templates locally --
 	config.defaultTemplate points here. Building from Drummer itself instead
-	needs a publicly reachable urlTemplate.
+	needs a publicly reachable urlTemplate. With --local-opml it serves the
+	local blog OPML too.
 	*/
 const templateServer = http.createServer (function (req, res) {
-	const f = path.join (templateFolder, decodeURIComponent (req.url.split ("?") [0]));
+	const urlpath = decodeURIComponent (req.url.split ("?") [0]);
+	if ((localOpmlFile !== undefined) && (urlpath == localOpmlPath)) {
+		fs.readFile (localOpmlFile, function (err, data) {
+			if (err) {
+				res.writeHead (500);
+				res.end ("Can't read " + localOpmlFile + ".");
+				}
+			else {
+				res.writeHead (200, {"Content-Type": "text/xml; charset=utf-8"});
+				res.end (data);
+				}
+			});
+		return;
+		}
+	const f = path.join (templateFolder, urlpath);
 	if (!f.startsWith (templateFolder)) {
 		res.writeHead (403);
 		res.end ("Forbidden.");
@@ -166,8 +223,7 @@ function ensureCalendar (callback) {
 		callback ();
 		return;
 		}
-	const jstruct = JSON.parse (fs.readFileSync (path.resolve (__dirname, "config.json"), "utf8"));
-	const url = jstruct.specialOutlines [blogName].baseUrl + "calendar.json";
+	const url = blogConfig.baseUrl + "calendar.json";
 	https.get (url, function (res) {
 		if (res.statusCode != 200) {
 			res.resume ();

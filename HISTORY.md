@@ -277,6 +277,25 @@ is no visible effect.
 
 ---
 
+## 2026-09-27 — building from a local OPML
+
+`--local-opml[=path]` builds from a local file (default `./blog.opml`) instead of
+`urlBlogOpml`. drummerCms reads the blog OPML in exactly one place — `getBlogOutline`
+(drummercms.js:146), via `request ()` — and it loads `config.json` itself without
+exposing it, so `run-local.js` wraps the `request` module and redirects that one URL
+to `http://localhost:1411/local-opml/blog.opml`, served by the template server. All
+other requests pass through. oldSchool's own OPML re-read (oldschool.js:1974) is only
+reached through its own `/build` server, which drummerCms doesn't use.
+
+Still fetched from the web: anything the OPML head points at (`urlAboutOpml`,
+`urlTemplate`, glossary), and `calendar.json` at `baseUrl`.
+
+Tested: with `blog.opml` identical to the hosted copy, output matched the previous
+build except for build timestamps; a copy with a changed `<title>` came through in
+the pages; a missing file exits 1 with a message.
+
+---
+
 ## Notes for next time
 
 **Blogroll sidebar.** Frank has an "Other Blogs" sidebar; this blog doesn't. That's
@@ -306,6 +325,7 @@ node serve-local.js                          # review at http://localhost:8080/b
 
 node run-local.js andysylvester --keep-alive # build, leave server up on :1410
 node run-local.js andysylvester --no-archives # skip the month archive step
+node run-local.js andysylvester --local-opml  # build from ./blog.opml (or =path)
 node build-archives.js andysylvester         # rebuild just the archives
 rm -rf output data                           # force a clean rebuild
 ```

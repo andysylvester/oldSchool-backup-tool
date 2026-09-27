@@ -26,6 +26,8 @@ Other options:
 ```
 node run-local.js andysylvester --keep-alive  # leave the drummerCms server up on :1410 afterward
 node run-local.js andysylvester --no-archives # skip the month archive step
+node run-local.js andysylvester --local-opml  # build from ./blog.opml instead of urlBlogOpml
+node run-local.js andysylvester --local-opml=path/to/file.opml
 node build-archives.js andysylvester          # rebuild only the month archives (needs a prior build)
 ```
 
@@ -33,7 +35,7 @@ To force a clean rebuild, delete `output/` and `data/`.
 
 ### How it works
 
-- **`config.json`** uses drummerCms's `specialOutlines` key to point the `andysylvester` blog at its OPML (`urlBlogOpml`) and set its public `baseUrl`. The build downloads the OPML from that URL, so to change the blog, edit and upload `blog.opml` there, then rebuild. The `blog.opml` in this repo is a copy. The original template config is kept as `config.json.template-backup`.
+- **`config.json`** uses drummerCms's `specialOutlines` key to point the `andysylvester` blog at its OPML (`urlBlogOpml`) and set its public `baseUrl`. The build downloads the OPML from that URL, so to change the blog, edit and upload `blog.opml` there, then rebuild. The `blog.opml` in this repo is a copy; with `--local-opml` the build reads it (or another local file) instead, and you upload the edited OPML afterward if the hosted copy should match. The original template config is kept as `config.json.template-backup`.
 - **`run-local.js`** starts drummerCms and calls its `/build` endpoint. Before that, it replaces the S3 upload with a write to `./output`, skips the rssCloud ping, and serves `./templates` on port 1411 so oldSchool can fetch the template. It also works around two oldSchoolBlog v0.8.16 issues: a double callback that crashed `/build`, and `calendar.json` sometimes not being written.
 - **`build-archives.js`** backfills the per-month archive pages. oldSchool only ever builds the page for the current month. `run-local.js` runs it automatically after a successful build.
 - **`templates/minimal-https/`** is the stock template with its scripting.com, fargo.io and radio3.io assets pointed at their S3 buckets, which serve HTTPS. Without this the blog breaks when served over HTTPS.
