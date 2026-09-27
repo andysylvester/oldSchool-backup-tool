@@ -19,6 +19,8 @@ node run-local.js andysylvester              # build the blog + month archives i
 node serve-local.js                          # review it at http://localhost:8080/blog/
 ```
 
+`andysylvester` is the blog's name: the key of its entry under `specialOutlines` in `config.json`, which holds the blog's OPML URL and `baseUrl`. drummerCms uses it to pick which blog to build, and oldSchool uses it for the cache folder (`data/pages/andysylvester/`). It doesn't appear in the published URLs. Both scripts default to `andysylvester`, so it can be left off; to build another blog, add an entry for it under `specialOutlines` and pass that name instead.
+
 Upload the contents of `output/blog/` to the blog's `baseUrl`.
 
 Other options:
